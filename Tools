@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Propexo Vendor Assessment - Greystar Real Estate Partners</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fb;
+      color: #1a1a2e;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      padding: 40px 48px 36px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .header-left h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      margin-top: 12px;
+    }
+
+    .header-label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .header-date {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-top: 8px;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+    }
+
+    .export-btn {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .export-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* ─── TABS ─── */
+    .tab-nav {
+      display: flex;
+      gap: 0;
+      margin-bottom: 32px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .tab-btn {
+      padding: 14px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      color: #6b7280;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn:hover { color: #1a1a2e; }
+    .tab-btn.active {
+      color: #0ea47a;
+      border-bottom-color: #0ea47a;
+    }
+    .tab-btn .tab-icon { font-size: 16px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ─── DATA FLOW TAB ─── */
+    .df-hero {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      border-radius: 12px;
+      padding: 36px 40px;
+      color: white;
+      margin-bottom: 28px;
+    }
+    .df-hero h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .df-hero p { font-size: 14px; color: #94a3b8; line-height: 1.6; max-width: 700px; }
+    .df-hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 24px;
+    }
+    .df-hero-stat-value { font-size: 36px; font-weight: 700; line-height: 1; }
+    .df-hero-stat-label { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+    .df-hero-stat.stranded .df-hero-stat-value { color: #e8683f; }
+    .df-hero-stat.connected .df-hero-stat-value { color: #0ea47a; }
+    .df-hero-stat.potential .df-hero-stat-value { color: #3b6bdb; }
+
+    /* Toggle */
+    .df-toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      background: white;
+      border-radius: 12px;
+      padding: 16px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .df-toggle-label { font-size: 14px; font-weight: 600; color: #6b7280; }
+    .df-toggle-label.active { color: #1a1a2e; }
+    .df-toggle {
+      position: relative;
+      width: 56px;
+      height: 30px;
+      background: #e2e8f0;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .df-toggle.on { background: #0ea47a; }
+    .df-toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      transition: left 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .df-toggle.on .df-toggle-knob { left: 29px; }
+
+    /* Network diagram */
+    .df-network-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 32px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .df-network-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #1a1a2e;
+    }
+    .df-network-card .df-subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+    .df-network-svg {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    /* Vendor breakdown bars */
+    .df-breakdown-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 32px;
+      margin-bottom: 28px;
+    }
+    .df-breakdown-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .df-breakdown-card .df-subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+    .df-vendor-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .df-vendor-row:last-child { border-bottom: none; }
+    .df-vendor-name {
+      width: 180px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a2e;
+      flex-shrink: 0;
+    }
+    .df-vendor-category {
+      width: 140px;
+      font-size: 11px;
+      color: #6b7280;
+      flex-shrink: 0;
+    }
+    .df-vendor-bar-container {
+      flex: 1;
+      height: 20px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .df-vendor-bar-pms {
+      height: 100%;
+      background: #0ea47a;
+      border-radius: 10px;
+      position: absolute;
+      left: 0;
+      transition: width 0.6s ease;
+    }
+    .df-vendor-bar-stranded {
+      height: 100%;
+      background: #e8683f;
+      border-radius: 0 10px 10px 0;
+      position: absolute;
+      transition: all 0.6s ease;
+    }
+    .df-vendor-stats {
+      width: 180px;
+      font-size: 11px;
+      color: #6b7280;
+      text-align: right;
+      flex-shrink: 0;
+      padding-left: 12px;
+    }
+    .df-vendor-stats .syncs { color: #0ea47a; font-weight: 700; }
+    .df-vendor-stats .stranded { color: #e8683f; font-weight: 700; }
+
+    /* Legend */
+    .df-legend {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+    .df-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .df-legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+    .df-legend-dot.green { background: #0ea47a; }
+    .df-legend-dot.orange { background: #e8683f; }
+    .df-legend-dot.gray { background: #e2e8f0; }
+
+    /* Bottom insight card */
+    .df-insight {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      border-left: 4px solid #f59e0b;
+    }
+    .df-insight h3 { font-size: 15px; font-weight: 700; color: #92400e; margin-bottom: 6px; }
+    .df-insight p { font-size: 13px; color: #78350f; line-height: 1.6; }
+
+    /* ─── KPI CARDS ─── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .kpi-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      padding: 24px 28px;
+      border-top: 3px solid;
+    }
+
+    .kpi-label {
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .kpi-total-vendors { border-top-color: #1a1a2e; }
+    .kpi-total-vendors .kpi-value { color: #1a1a2e; }
+
+    .kpi-connectors-ready { border-top-color: #0ea47a; }
+    .kpi-connectors-ready .kpi-value { color: #0ea47a; }
+
+    .kpi-connectors-build { border-top-color: #e8683f; }
+    .kpi-connectors-build .kpi-value { color: #e8683f; }
+
+    .kpi-data-fields { border-top-color: #3b6bdb; }
+    .kpi-data-fields .kpi-value { color: #3b6bdb; }
+
+    /* ─── DATA COVERAGE SCORE ─── */
+    .coverage-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      padding: 28px 40px;
+      margin-bottom: 32px;
+    }
+
+    .coverage-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .coverage-subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 28px;
+    }
+
+    .coverage-content {
+      display: flex;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .coverage-ring {
+      flex-shrink: 0;
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .coverage-ring svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .coverage-ring-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .coverage-ring-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0ea47a;
+      line-height: 1;
+    }
+
+    .coverage-ring-label {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .coverage-right {
+      flex: 1;
+    }
+
+    .coverage-stats {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .coverage-stat-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .coverage-stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .coverage-stat-value .fields-label {
+      font-size: 14px;
+      font-weight: 400;
+      color: #6b7280;
+      margin-left: 4px;
+    }
+
+    .coverage-stat-today .coverage-stat-value { color: #0ea47a; }
+    .coverage-stat-buildout .coverage-stat-value { color: #3b6bdb; }
+    .coverage-stat-missing .coverage-stat-value { color: #e8683f; }
+
+    .coverage-banner {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #166534;
+      line-height: 1.5;
+    }
+
+    /* ─── COST OF FRAGMENTED DATA ─── */
+    .fragmented-data {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 12px;
+      padding: 20px 32px;
+      margin-bottom: 32px;
+    }
+
+    .fragmented-data-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 16px;
+    }
+
+    .fragmented-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-bottom: 14px;
+    }
+
+    .fragmented-stat {
+      padding: 0 24px;
+      border-right: 1px solid #fde68a;
+    }
+
+    .fragmented-stat:first-child {
+      padding-left: 0;
+    }
+
+    .fragmented-stat:last-child {
+      border-right: none;
+      padding-right: 0;
+    }
+
+    .fragmented-stat-number {
+      font-size: 22px;
+      font-weight: 700;
+      color: #92400e;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .fragmented-stat-text {
+      font-size: 12px;
+      color: #78350f;
+      line-height: 1.4;
+    }
+
+    .fragmented-stat-source {
+      font-size: 11px;
+      color: #a16207;
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    .fragmented-bottom {
+      font-size: 12px;
+      color: #92400e;
+      padding-top: 14px;
+      border-top: 1px solid #fde68a;
+    }
+
+    /* ─── COVERAGE BY CATEGORY ─── */
+    .category-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      padding: 28px 40px;
+      margin-bottom: 32px;
+    }
+
+    .category-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .category-card-subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+
+    .category-filters {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6b7280;
+    }
+
+    .filter-select, .filter-btn {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #374151;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .filter-select {
+      min-width: 180px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border: 2px solid #d1d5db;
+    }
+
+    .filter-btn.active {
+      background: #1a1a2e;
+      color: white;
+      border-color: #1a1a2e;
+    }
+
+    .filter-btn:hover:not(.active) {
+      border-color: #9ca3af;
+    }
+
+    .category-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .category-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .category-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .category-row-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .category-row-stats {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .category-progress {
+      width: 100%;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .category-progress-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .category-progress-fill.ready { background: #0ea47a; }
+    .category-progress-fill.partial { background: #3b6bdb; }
+    .category-progress-fill.notready { background: #e8683f; }
+
+    .category-vendors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .vendor-chip {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      border: 1px solid;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .vendor-chip.ready {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #a7f3d0;
+    }
+
+    .vendor-chip.needs-build {
+      background: #fef9c3;
+      color: #854d0e;
+      border-color: #fde68a;
+    }
+
+    .vendor-chip.quick-win {
+      background: #fef9c3;
+      color: #854d0e;
+      border-color: #fde68a;
+      border-left: 3px solid #f59e0b;
+    }
+
+    /* ─── VENDOR TABLE ─── */
+    .vendor-table-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    .vendor-table-header {
+      padding: 28px 40px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .vendor-table-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f9fafb;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    th {
+      padding: 14px 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: left;
+    }
+
+    td {
+      padding: 14px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 13px;
+    }
+
+    tbody tr {
+      transition: background 0.2s ease;
+      cursor: pointer;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    tbody tr.expanded {
+      background: #f9fafb;
+    }
+
+    .vendor-name {
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .vendor-name.quick-win::before {
+      content: "★ ";
+      color: #f59e0b;
+      margin-right: 2px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-badge.ready {
+      background: #ecfdf5;
+      color: #065f46;
+    }
+
+    .status-badge.needs-build {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .category-text {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .data-fields-count {
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .est-build {
+      color: #9ca3af;
+    }
+
+    .est-build.active {
+      color: #e8683f;
+      font-weight: 600;
+    }
+
+    .rollout-week {
+      color: #3b6bdb;
+      font-weight: 600;
+    }
+
+    .row-expanded {
+      display: none;
+    }
+
+    .row-expanded.show {
+      display: table-row;
+    }
+
+    tbody tr.expanded + tr.row-expanded {
+      display: table-row;
+    }
+
+    .expanded-content {
+      padding: 16px 20px;
+      background: #f9fafb;
+    }
+
+    .expanded-section {
+      margin-bottom: 12px;
+    }
+
+    .expanded-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .expanded-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: white;
+      border: 1px solid #d1d5db;
+      color: #4b5563;
+    }
+
+    .tag.fields {
+      font-family: 'Monaco', 'Menlo', monospace;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #1f2937;
+    }
+
+    .tag-more {
+      font-size: 11px;
+      padding: 3px 8px;
+      color: #3b6bdb;
+      font-weight: 600;
+    }
+
+    .vendor-table-show-all {
+      width: 100%;
+      padding: 12px;
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: #3b6bdb;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .vendor-table-show-all:hover {
+      background: #f3f4f6;
+    }
+
+    /* ─── CONNECTOR ROLLOUT TIMELINE ─── */
+    .timeline-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      padding: 28px 40px;
+      margin-bottom: 32px;
+    }
+
+    .timeline-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .timeline-subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+
+    .timeline-weeks {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .timeline-week {
+      flex: 1 1 200px;
+      min-width: 200px;
+      border-right: 1px solid #e5e7eb;
+      padding-right: 16px;
+      margin-right: 16px;
+    }
+
+    .timeline-week:last-child {
+      border-right: none;
+    }
+
+    .timeline-week-header {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .timeline-vendor {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      color: #3730a3;
+      font-weight: 500;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .timeline-result {
+      background: #f5f3ff;
+      border: 1px solid #ddd6fe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #5b21b6;
+      line-height: 1.5;
+    }
+
+    /* ─── WHAT YOU CAN BUILD ─── */
+    .build-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      padding: 28px 40px;
+      margin-bottom: 32px;
+    }
+
+    .build-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .build-subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+
+    .build-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .build-item {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .build-item:hover {
+      border-color: #3b6bdb;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 107, 219, 0.15);
+    }
+
+    .build-emoji {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .build-item h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 8px 0;
+      color: #1a1a2e;
+    }
+
+    .build-item p {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .build-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .build-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #3b6bdb;
+      font-weight: 600;
+    }
+
+    .build-link {
+      font-size: 12px;
+      color: #3b6bdb;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .build-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ─── API ACCESS TIMELINE ─── */
+    .api-timeline-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 28px 40px;
+      margin-bottom: 32px;
+    }
+    .api-timeline-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .api-timeline-subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+    .api-timeline-header {
+      display: grid;
+      grid-template-columns: 180px 140px 1fr 1fr 120px;
+      gap: 0;
+      padding: 12px 16px;
+      background: #f9fafb;
+      border-radius: 8px 8px 0 0;
+      border-bottom: 2px solid #e5e7eb;
+      font-size: 11px;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .api-timeline-row {
+      display: grid;
+      grid-template-columns: 180px 140px 1fr 1fr 120px;
+      gap: 0;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      align-items: center;
+      transition: background 0.15s ease;
+    }
+    .api-timeline-row:hover { background: #f9fafb; }
+    .api-timeline-row:last-child { border-bottom: none; }
+    .api-timeline-vendor { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+    .api-timeline-category { font-size: 12px; color: #6b7280; }
+    .api-timeline-bar {
+      position: relative;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: white;
+    }
+    .api-timeline-bar.propexo {
+      background: linear-gradient(90deg, #0ea47a, #10b981);
+      margin-right: 12px;
+    }
+    .api-timeline-bar.direct {
+      background: linear-gradient(90deg, #e8683f, #dc2626);
+      margin-right: 12px;
+    }
+    .api-timeline-savings {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0ea47a;
+      text-align: center;
+    }
+    .api-timeline-callout {
+      margin-top: 20px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #166534;
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .api-timeline-callout-icon { font-size: 18px; flex-shrink: 0; }
+    .api-timeline-legend {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+    .api-timeline-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .api-timeline-legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+    }
+    .api-timeline-legend-dot.propexo { background: #0ea47a; }
+    .api-timeline-legend-dot.direct { background: #e8683f; }
+
+    /* ─── FOOTER CTA ─── */
+    .footer-cta {
+      background: linear-gradient(135deg, #1a1a2e, #0f3460);
+      border-radius: 12px;
+      padding: 36px 40px;
+      color: white;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .footer-cta h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .footer-cta p {
+      font-size: 15px;
+      opacity: 0.8;
+      max-width: 600px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+
+    .cta-stats {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .cta-stat {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .cta-arrow {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* ─── PAGE FOOTER ─── */
+    .page-footer {
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .coverage-content {
+        flex-direction: column;
+      }
+
+      .category-filters {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .filter-select {
+        width: 100%;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 10px 12px;
+      }
+
+      .build-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .fragmented-stats {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .fragmented-stat {
+        padding: 0;
+        border-right: none;
+        border-bottom: 1px solid #fde68a;
+        padding-bottom: 12px;
+      }
+
+      .fragmented-stat:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .timeline-weeks {
+        flex-wrap: wrap;
+      }
+
+      .timeline-week {
+        flex: 1 1 100%;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+        padding-right: 0;
+        padding-bottom: 16px;
+        margin-right: 0;
+        margin-bottom: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-left">
+        <div class="header-label">Propexo Data Integration Assessment</div>
+        <h1>Greystar Real Estate Partners</h1>
+        <div class="header-date">Prepared April 13, 2026</div>
+      </div>
+      <div class="header-right">
+        <button class="export-btn" onclick="exportToExcel()">↓ Export to Excel</button>
+      </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('assessment')">
+        <span class="tab-icon">📋</span> Vendor Assessment
+      </button>
+      <button class="tab-btn" onclick="switchTab('dataflow')">
+        <span class="tab-icon">🔀</span> Data Flow Analysis
+      </button>
+    </div>
+
+    <!-- ═══ TAB 1: ASSESSMENT (existing content) ═══ -->
+    <div id="tab-assessment" class="tab-panel active">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-total-vendors">
+        <div class="kpi-label">Total Vendors</div>
+        <div class="kpi-value" id="kpiTotalVendors">22</div>
+        <div class="kpi-sub">in your ecosystem</div>
+      </div>
+      <div class="kpi-card kpi-connectors-ready">
+        <div class="kpi-label">Connectors Ready</div>
+        <div class="kpi-value" id="kpiConnectorsReady">14</div>
+        <div class="kpi-sub">available today</div>
+      </div>
+      <div class="kpi-card kpi-connectors-build">
+        <div class="kpi-label">Connectors to Build</div>
+        <div class="kpi-value" id="kpiConnectorsBuild">8</div>
+        <div class="kpi-sub" id="kpiWeeksEstimate">~2 weeks to complete</div>
+      </div>
+      <div class="kpi-card kpi-data-fields">
+        <div class="kpi-label">Total Data Fields</div>
+        <div class="kpi-value" id="kpiDataFields">1,800+</div>
+        <div class="kpi-sub">across all vendors</div>
+      </div>
+    </div>
+
+    <!-- DATA COVERAGE SCORE -->
+    <div class="coverage-card">
+      <h2>Data Coverage Score</h2>
+      <p class="coverage-subtitle">How much of your operational data Propexo can centralize today vs. after full connector buildout.</p>
+      <div class="coverage-content">
+        <div class="coverage-ring">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+            <circle id="coverageArc" cx="60" cy="60" r="50" fill="none" stroke="#0ea47a" stroke-width="10" stroke-linecap="round"
+                    transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="coverage-ring-text">
+            <div class="coverage-ring-value" id="coveragePercentageToday">62%</div>
+            <div class="coverage-ring-label">today</div>
+          </div>
+        </div>
+        <div class="coverage-right">
+          <div class="coverage-stats">
+            <div class="coverage-stat coverage-stat-today">
+              <div class="coverage-stat-label">Accessible Today</div>
+              <div class="coverage-stat-value"><span id="fieldsToday">1,116</span><span class="fields-label">fields</span></div>
+            </div>
+            <div class="coverage-stat coverage-stat-buildout">
+              <div class="coverage-stat-label">After Full Buildout</div>
+              <div class="coverage-stat-value"><span id="fieldsBuildout">1,800</span><span class="fields-label">fields</span></div>
+            </div>
+            <div class="coverage-stat coverage-stat-missing">
+              <div class="coverage-stat-label">Data You're Missing</div>
+              <div class="coverage-stat-value"><span id="fieldsMissing">684</span><span class="fields-label">fields</span></div>
+            </div>
+          </div>
+          <div class="coverage-banner" id="coverageBanner">
+            <strong>Full buildout in ~2 weeks</strong> — bringing your data coverage from 62% to 100% across all 22 vendors at 5 connectors/week.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COST OF FRAGMENTED DATA -->
+    <div class="fragmented-data">
+      <div class="fragmented-data-title">⚠ The Cost of Fragmented Data</div>
+      <div class="fragmented-stats">
+        <div class="fragmented-stat">
+          <div class="fragmented-stat-number">61%</div>
+          <div class="fragmented-stat-text">of CRE firms still rely on legacy, disconnected systems</div>
+          <div class="fragmented-stat-source">Deloitte</div>
+        </div>
+        <div class="fragmented-stat">
+          <div class="fragmented-stat-number">20%</div>
+          <div class="fragmented-stat-text">reduction in maintenance costs possible with integrated, predictive data</div>
+          <div class="fragmented-stat-source">Gartner</div>
+        </div>
+        <div class="fragmented-stat">
+          <div class="fragmented-stat-number">50%</div>
+          <div class="fragmented-stat-text">less downtime when maintenance data flows across systems in real-time</div>
+          <div class="fragmented-stat-source">Gartner</div>
+        </div>
+      </div>
+      <div class="fragmented-bottom">
+        Every disconnected vendor means duplicate entry, inconsistent numbers, and decisions made on partial data.
+      </div>
+    </div>
+
+    <!-- COVERAGE BY CATEGORY -->
+    <div class="category-card">
+      <h2>Coverage by Category</h2>
+      <p class="category-card-subtitle">Filter by category to see connector status and data coverage for your key systems.</p>
+
+      <div class="category-filters">
+        <label class="filter-label">Filter:</label>
+        <select class="filter-select" id="categoryFilter" onchange="applyFilters()">
+          <option value="">All Categories</option>
+        </select>
+        <button class="filter-btn active" data-filter="" onclick="filterByStatus(event)">All</button>
+        <button class="filter-btn" data-filter="ready" onclick="filterByStatus(event)">Ready</button>
+        <button class="filter-btn" data-filter="needs-build" onclick="filterByStatus(event)">Needs Build</button>
+      </div>
+
+      <div class="category-rows" id="categoryRows">
+        <!-- Filled by JavaScript -->
+      </div>
+    </div>
+
+    <!-- VENDOR TABLE -->
+    <div class="vendor-table-card">
+      <div class="vendor-table-header">
+        <h2>Vendor Assessment</h2>
+      </div>
+      <table id="vendorTable">
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Data Fields</th>
+            <th>Est. Build</th>
+            <th>Rollout</th>
+          </tr>
+        </thead>
+        <tbody id="vendorTableBody">
+          <!-- Filled by JavaScript -->
+        </tbody>
+      </table>
+      <button class="vendor-table-show-all" id="showAllBtn" onclick="toggleShowAll()">Show all 22 vendors ▾</button>
+    </div>
+
+    <!-- CONNECTOR ROLLOUT TIMELINE -->
+    <div class="timeline-card">
+      <h2>Connector Rollout Timeline</h2>
+      <p class="timeline-subtitle" id="timelineSubtitle">Estimated schedule to build all 8 missing connectors at 5 connectors per week.</p>
+      <div class="timeline-weeks" id="timelineWeeks">
+        <!-- Filled by JavaScript -->
+      </div>
+      <div class="timeline-result" id="timelineResult">
+        <!-- Filled by JavaScript -->
+      </div>
+    </div>
+
+    <!-- API ACCESS TIMELINE COMPARISON -->
+    <div class="api-timeline-card">
+      <h2>API Access Timeline: Propexo vs. Going Direct</h2>
+      <p class="api-timeline-subtitle">How long it typically takes to get production API access to each vendor — and what Propexo eliminates.</p>
+      <div class="api-timeline-legend">
+        <div class="api-timeline-legend-item"><div class="api-timeline-legend-dot propexo"></div> Via Propexo</div>
+        <div class="api-timeline-legend-item"><div class="api-timeline-legend-dot direct"></div> Going Direct</div>
+      </div>
+      <div class="api-timeline-header">
+        <div>Vendor</div>
+        <div>Category</div>
+        <div>Via Propexo</div>
+        <div>Going Direct</div>
+        <div style="text-align:center">Time Saved</div>
+      </div>
+      <div id="apiTimelineRows">
+        <!-- Filled by JavaScript -->
+      </div>
+      <div class="api-timeline-callout" id="apiTimelineCallout">
+        <div class="api-timeline-callout-icon">⚡</div>
+        <div id="apiTimelineCalloutText"></div>
+      </div>
+    </div>
+
+    <!-- WHAT YOU CAN BUILD -->
+    <div class="build-card">
+      <h2>What You Can Build</h2>
+      <p class="build-subtitle">See what becomes possible when all your data flows into one place.</p>
+      <div class="build-grid">
+        <div class="build-item" onclick="window.open('https://propexo-modern-demo.netlify.app/', '_blank')">
+          <div class="build-emoji">📊</div>
+          <h3>Daily Portfolio Briefing</h3>
+          <p>Occupancy, renewals, maintenance, and resident satisfaction — all in one morning view.</p>
+          <div class="build-tags">
+            <span class="build-tag">PMS</span>
+            <span class="build-tag">Revenue Mgmt</span>
+            <span class="build-tag">Maintenance</span>
+            <span class="build-tag">Resident Exp</span>
+          </div>
+          <a class="build-link">See it live →</a>
+        </div>
+        <div class="build-item" onclick="window.open('https://propexo-modern-demo.netlify.app/trade-out', '_blank')">
+          <div class="build-emoji">🔄</div>
+          <h3>Lease Trade-Out Optimizer</h3>
+          <p>Expiring leases alongside lead pipelines, screening approval rates, and recommended pricing — all in real-time.</p>
+          <div class="build-tags">
+            <span class="build-tag">Revenue Mgmt</span>
+            <span class="build-tag">PMS</span>
+            <span class="build-tag">Leasing CRM</span>
+            <span class="build-tag">Screening</span>
+          </div>
+          <a class="build-link">See it live →</a>
+        </div>
+        <div class="build-item" onclick="window.open('https://propexo-modern-demo.netlify.app/renewals', '_blank')">
+          <div class="build-emoji">📋</div>
+          <h3>Renewal Intelligence</h3>
+          <p>Every pending renewal in one queue with payment history, satisfaction scores, and market-rate comparisons.</p>
+          <div class="build-tags">
+            <span class="build-tag">PMS</span>
+            <span class="build-tag">Revenue Mgmt</span>
+            <span class="build-tag">Payments</span>
+            <span class="build-tag">Resident Exp</span>
+          </div>
+          <a class="build-link">See it live →</a>
+        </div>
+        <div class="build-item" onclick="window.open('https://propexo-modern-demo.netlify.app/source-attribution', '_blank')">
+          <div class="build-emoji">🎯</div>
+          <h3>Source Attribution & Lead Quality</h3>
+          <p>Know exactly which lead sources drive signed leases — not just traffic — so you can optimize spend.</p>
+          <div class="build-tags">
+            <span class="build-tag">Leasing CRM</span>
+            <span class="build-tag">PMS</span>
+            <span class="build-tag">Digital Marketing</span>
+          </div>
+          <a class="build-link">See it live →</a>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- end tab-assessment -->
+
+    <!-- ═══ TAB 2: DATA FLOW ANALYSIS ═══ -->
+    <div id="tab-dataflow" class="tab-panel">
+
+      <!-- Hero stats -->
+      <div class="df-hero">
+        <h2>Where Does Your Data Actually Live?</h2>
+        <p>Your 22 vendor systems generate over 1,700 data fields. But only a fraction of that data ever makes it into your PMS. The rest is stranded in vendor portals — invisible to your reporting, your AI tools, and your decision-making.</p>
+        <div class="df-hero-stats">
+          <div class="df-hero-stat stranded">
+            <div class="df-hero-stat-value" id="dfStranded">82%</div>
+            <div class="df-hero-stat-label">of your data is stranded in vendor silos</div>
+          </div>
+          <div class="df-hero-stat connected">
+            <div class="df-hero-stat-value" id="dfConnected">312</div>
+            <div class="df-hero-stat-label">fields sync to your PMS today</div>
+          </div>
+          <div class="df-hero-stat potential">
+            <div class="df-hero-stat-value" id="dfTotal">1,740</div>
+            <div class="df-hero-stat-label">total fields across all vendors</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toggle: Today vs. With Propexo -->
+      <div class="df-toggle-container">
+        <span class="df-toggle-label active" id="dfLabelToday">Today: Data Silos</span>
+        <div class="df-toggle" id="dfToggle" onclick="toggleDataFlow()">
+          <div class="df-toggle-knob"></div>
+        </div>
+        <span class="df-toggle-label" id="dfLabelPropexo">With Propexo: Unified</span>
+      </div>
+
+      <!-- Network Diagram -->
+      <div class="df-network-card">
+        <h3 id="dfNetworkTitle">Your Data Today: Fragmented Silos</h3>
+        <p class="df-subtitle" id="dfNetworkSubtitle">Each vendor's data is locked in its own portal. Your PMS sees only a fraction of the total picture.</p>
+        <svg id="dfNetworkSvg" class="df-network-svg" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+          <!-- Rendered by JavaScript -->
+        </svg>
+      </div>
+
+      <!-- Per-vendor breakdown -->
+      <div class="df-breakdown-card">
+        <h3>Data Sync Breakdown by Vendor</h3>
+        <p class="df-subtitle">How much of each vendor's data currently flows to your PMS vs. what's stranded.</p>
+        <div class="df-legend">
+          <div class="df-legend-item"><div class="df-legend-dot green"></div> Syncs to PMS</div>
+          <div class="df-legend-item"><div class="df-legend-dot orange"></div> Stranded in vendor portal</div>
+          <div class="df-legend-item"><div class="df-legend-dot gray"></div> No connection path</div>
+        </div>
+        <div id="dfBreakdownRows">
+          <!-- Filled by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Insight callout -->
+      <div class="df-insight">
+        <h3>Why Your PMS Is Not a Data Warehouse</h3>
+        <p>Your PMS was designed to manage leases and collect rent — not to be the central nervous system for 25 vendor systems. Even with APIs, most PMS platforms accept fewer than 20% of the data fields your other vendors generate. Inspection photos, AI chat transcripts, IoT sensor data, marketing attribution, utility benchmarks — none of it has a home in Yardi. A purpose-built data warehouse changes this: every field, from every vendor, in one normalized schema. That's the foundation for real intelligence.</p>
+      </div>
+
+    </div><!-- end tab-dataflow -->
+
+    <!-- FOOTER CTA -->
+    <div class="footer-cta">
+      <h2>Your Data. Your Control. One Platform.</h2>
+      <p>Stop being gatekept from your own operational data. Propexo connects every vendor in your ecosystem into a single data lake — powering better decisions, better tools, and full transparency.</p>
+      <div class="cta-stats">
+        <div class="cta-stat" id="ctaToday">62%</div>
+        <div class="cta-arrow">→</div>
+        <div class="cta-stat">100%</div>
+        <div style="font-size: 14px; opacity: 0.8;">in ~2 weeks</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE FOOTER -->
+  <div class="page-footer">
+    Prepared by Propexo · April 13, 2026 · Confidential
+  </div>
+
+  <script>
+    // VENDOR DATA
+    const CLIENT = "Greystar Real Estate Partners";
+    const CONNECTORS_PER_WEEK = 5;
+
+    const VENDORS = [
+      { vendor:"Yardi Voyager", category:"Property Management", hasConnector:true, quickWin:true, dataRows:150,
+        dataPoints:["Leases","Residents","Units","Work Orders","GL Entries","AP/AR","Owners"],
+        detailedFields:["property_id","property_name","address","unit_id","unit_number","unit_type","sqft","bedrooms","bathrooms","market_rent","resident_id","first_name","last_name","email","phone","move_in_date","move_out_date","lease_id","lease_start_date","lease_end_date","lease_status","rent_amount","rent_due_day","charge_code","charge_amount","payment_amount","payment_date","payment_method","balance","security_deposit","work_order_id","work_order_status","work_order_priority","gl_account","gl_amount","owner_id","vendor_id"] },
+      { vendor:"RealPage", category:"Property Management", hasConnector:true, quickWin:false, dataRows:140,
+        dataPoints:["Leases","Residents","Units","Payments","GL Entries","Inspections"],
+        detailedFields:["property_id","property_name","unit_id","unit_number","sqft","market_rent","resident_id","first_name","last_name","email","phone","move_in_date","move_out_date","lease_id","lease_start_date","lease_end_date","rent_amount","charge_code","charge_amount","payment_amount","payment_date","balance","security_deposit","work_order_id","work_order_status","gl_account","gl_amount","inspection_id","inspection_date"] },
+      { vendor:"Entrata", category:"Property Management", hasConnector:true, quickWin:true, dataRows:135,
+        dataPoints:["Leases","Residents","Units","Payments","Work Orders","Applications"],
+        detailedFields:["property_id","property_name","unit_id","unit_number","unit_type","sqft","bedrooms","bathrooms","market_rent","resident_id","first_name","last_name","email","phone","move_in_date","move_out_date","lease_id","lease_start_date","lease_end_date","lease_status","rent_amount","charge_code","charge_amount","payment_amount","payment_date","payment_method","balance","work_order_id","work_order_status","application_id","application_status","screening_status"] },
+      { vendor:"Knock CRM", category:"Leasing, CRM & Marketing", hasConnector:true, quickWin:true, dataRows:95,
+        dataPoints:["Leads","Tours","Follow-ups","Conversion Rates","Source Attribution"],
+        detailedFields:["lead_id","first_name","last_name","email","phone","lead_source","lead_status","property_interest","tour_date","tour_type","follow_up_date","conversion_stage","days_to_convert","leasing_agent","utm_source","utm_campaign"] },
+      { vendor:"Funnel", category:"Leasing, CRM & Marketing", hasConnector:true, quickWin:false, dataRows:85,
+        dataPoints:["Prospects","AI Chat Logs","Tour Bookings","Application Status"],
+        detailedFields:["prospect_id","first_name","last_name","email","phone","chat_timestamp","chat_summary","sentiment_score","tour_booked","tour_date","tour_completed","application_started","application_submitted","nurture_stage","response_time_minutes","property_id"] },
+      { vendor:"RentCafe", category:"Leasing, CRM & Marketing", hasConnector:true, quickWin:false, dataRows:65,
+        dataPoints:["Listings","Website Traffic","Online Applications","Virtual Tours"],
+        detailedFields:["listing_id","listing_status","property_id","unit_type","availability_date","rent_amount","photos_count","virtual_tour_url","page_views","unique_visitors","application_id","application_date","applicant_name","referral_source"] },
+      { vendor:"HappyCo", category:"Inspections & Compliance", hasConnector:true, quickWin:false, dataRows:70,
+        dataPoints:["Inspection Records","Unit Conditions","Photo Docs","Compliance Checklists"],
+        detailedFields:["inspection_id","property_id","unit_id","inspection_type","inspection_date","inspector_name","overall_score","category_score","item_condition","item_notes","photo_url","compliance_status","deficiency_type","deficiency_severity","remediation_due_date","remediation_status"] },
+      { vendor:"Breezeway", category:"Inspections & Compliance", hasConnector:true, quickWin:false, dataRows:55,
+        dataPoints:["Task Management","Inventory","Quality Assurance","Scheduling"],
+        detailedFields:["task_id","property_id","unit_id","task_type","assigned_to","due_date","completed_date","status","quality_score","inventory_item","quantity","condition_rating","photo_url","notes","schedule_frequency"] },
+      { vendor:"Latchel", category:"Maintenance & Repairs", hasConnector:true, quickWin:false, dataRows:45,
+        dataPoints:["Service Requests","Vendor Coordination","Cost Tracking","Resident Comms"],
+        detailedFields:["request_id","property_id","unit_id","issue_type","urgency","status","created_date","resolved_date","assigned_vendor","vendor_response_time","resolution_time_hours","cost","resident_notified","satisfaction_rating"] },
+      { vendor:"SmartRent", category:"Smart Access & IoT", hasConnector:true, quickWin:false, dataRows:80,
+        dataPoints:["Device Status","Access Logs","Energy Usage","Leak Detection","Thermostat Data"],
+        detailedFields:["device_id","device_type","property_id","unit_id","status","last_ping","lock_event_type","lock_timestamp","access_user","thermostat_setpoint","thermostat_actual","hvac_mode","energy_kwh","energy_date","leak_detected","leak_location","humidity_level","battery_level"] },
+      { vendor:"Conservice", category:"Utility Management", hasConnector:true, quickWin:false, dataRows:60,
+        dataPoints:["Utility Billing","Consumption Data","RUBS Allocations","Submeter Reads"],
+        detailedFields:["billing_id","property_id","unit_id","utility_type","billing_period_start","billing_period_end","consumption_amount","consumption_unit","cost","rubs_allocation_method","rubs_share","submeter_id","submeter_read_date","submeter_value","variance_pct","provider_name"] },
+      { vendor:"Zego", category:"Payments & Financial Services", hasConnector:true, quickWin:false, dataRows:55,
+        dataPoints:["Payment Transactions","Utility Billing","Resident Ledger","Auto-Pay Status"],
+        detailedFields:["transaction_id","resident_id","property_id","unit_id","payment_amount","payment_date","payment_method","payment_type","transaction_status","utility_type","utility_amount","auto_pay_enrolled","ledger_balance","late_fee_amount","nsf_count"] },
+      { vendor:"Birdeye", category:"Reputation Management", hasConnector:true, quickWin:false, dataRows:40,
+        dataPoints:["Reviews","Ratings","Sentiment Analysis","Response Tracking"],
+        detailedFields:["review_id","property_id","platform","rating","review_date","reviewer_name","review_text","sentiment_score","response_date","response_text","keyword_tags","star_breakdown"] },
+      { vendor:"EliseAI", category:"AI Communications", hasConnector:true, quickWin:false, dataRows:50,
+        dataPoints:["AI Conversations","Lead Routing","Appointment Setting","Response Metrics"],
+        detailedFields:["conversation_id","property_id","channel","lead_id","started_at","ended_at","messages_count","intent_detected","appointment_set","appointment_date","handoff_to_agent","response_time_seconds","resolution_status","satisfaction_score"] },
+      { vendor:"Sage Intacct", category:"Accounting & Finance", hasConnector:false, quickWin:false, dataRows:90,
+        dataPoints:["GL Transactions","AP/AR","Revenue Recognition","Budgets","Bank Reconciliation"],
+        detailedFields:["gl_account_id","gl_account_name","transaction_date","debit_amount","credit_amount","journal_entry_id","vendor_invoice_id","vendor_name","invoice_amount","invoice_date","payment_status","ar_balance","budget_id","budget_amount","actual_amount","variance","department","location","bank_account","reconciliation_status"] },
+      { vendor:"SightPlan", category:"Maintenance Operations", hasConnector:false, quickWin:false, dataRows:55,
+        dataPoints:["Work Order Management","Vendor Dispatch","Inventory","Preventive Maintenance"],
+        detailedFields:["work_order_id","property_id","unit_id","category","priority","status","created_date","scheduled_date","completed_date","assigned_vendor","labor_cost","parts_cost","total_cost","resident_satisfaction","inventory_item","preventive_schedule"] },
+      { vendor:"WegoWise", category:"Utility Analytics", hasConnector:false, quickWin:false, dataRows:45,
+        dataPoints:["Energy Benchmarking","Water Usage","Utility Costs","ESG Metrics"],
+        detailedFields:["property_id","benchmark_date","energy_use_intensity","water_use_intensity","total_energy_cost","total_water_cost","carbon_emissions","energy_star_score","year_over_year_change","esg_score","utility_type","monthly_cost","monthly_consumption"] },
+      { vendor:"TransUnion SmartMove", category:"Screening", hasConnector:false, quickWin:false, dataRows:40,
+        dataPoints:["Credit Reports","Criminal Checks","Eviction History","Income Verification"],
+        detailedFields:["screening_id","applicant_id","property_id","screening_date","credit_score","credit_recommendation","criminal_check_status","evictions_found","income_verified","income_amount","debt_to_income_ratio","overall_recommendation","report_expiry"] },
+      { vendor:"RealPage Revenue Mgmt", category:"Revenue Management", hasConnector:false, quickWin:true, dataRows:85,
+        dataPoints:["Pricing Recommendations","Market Comps","Lease Term Optimization","Concessions"],
+        detailedFields:["property_id","unit_type","recommended_rent","current_rent","rent_delta","market_comp_avg","comp_property_count","optimal_term","concession_type","concession_amount","renewal_recommended_rent","renewal_increase_pct","effective_rent","occupancy_rate","exposure_pct"] },
+      { vendor:"REVS (Yardi)", category:"Revenue Management", hasConnector:false, quickWin:false, dataRows:65,
+        dataPoints:["Pricing Models","Demand Forecasting","Competitive Analysis","Yield Management"],
+        detailedFields:["property_id","unit_type","model_price","demand_score","demand_trend","competitor_name","competitor_rent","competitor_concession","yield_target","actual_yield","variance","forecast_30_day","forecast_60_day","seasonal_adjustment"] },
+      { vendor:"ActiveBuilding", category:"Resident Engagement", hasConnector:false, quickWin:false, dataRows:35,
+        dataPoints:["Community Posts","Package Tracking","Event RSVPs","Amenity Reservations"],
+        detailedFields:["post_id","post_date","post_type","engagement_count","package_id","carrier","delivery_date","pickup_date","event_id","event_name","event_date","rsvp_count","amenity_id","reservation_date","resident_id"] },
+      { vendor:"Effective Coverage", category:"Insurance", hasConnector:false, quickWin:false, dataRows:30,
+        dataPoints:["Policy Status","Claims Data","Coverage Gaps","Renewal Dates"],
+        detailedFields:["policy_id","resident_id","property_id","policy_type","carrier","premium_amount","coverage_amount","start_date","end_date","status","claim_id","claim_date","claim_amount","claim_status","renewal_date","auto_renew"] },
+    ];
+
+    const EXAMPLES = {
+      property_id:"prop_a1b2c3", property_name:"The Reserve at Maple Creek", address:"1200 Maple Creek Dr",
+      unit_id:"unit_4d5e6f", unit_number:"204B", unit_type:"2BR/2BA", sqft:"1,150", bedrooms:"2", bathrooms:"2", market_rent:"$2,450",
+      resident_id:"res_7g8h9i", first_name:"Sarah", last_name:"Mitchell", email:"s.mitchell@email.com", phone:"(512) 555-0147",
+      move_in_date:"2024-03-15", move_out_date:"2025-03-14", lease_id:"lease_j1k2l3", lease_start_date:"2024-03-15", lease_end_date:"2025-03-14",
+      lease_status:"Active", rent_amount:"$2,350", rent_due_day:"1", charge_code:"RENT", charge_amount:"$2,350.00",
+      payment_amount:"$2,350.00", payment_date:"2025-01-03", payment_method:"ACH", balance:"$0.00", security_deposit:"$2,350.00",
+      work_order_id:"wo_m3n4o5", work_order_status:"Completed", work_order_priority:"Normal",
+      gl_account:"4000-1001", gl_amount:"$24,500.00", owner_id:"own_b8c9d0", vendor_id:"vnd_h4i5j6",
+      lead_id:"lead_001", lead_source:"Apartments.com", lead_status:"Tour Scheduled", tour_date:"2025-01-15", tour_type:"In-Person",
+      follow_up_date:"2025-01-17", conversion_stage:"Applied", days_to_convert:"8", leasing_agent:"Maria Garcia",
+      utm_source:"google", utm_campaign:"spring_lease_up",
+      listing_id:"lst_001", listing_status:"Available", availability_date:"2025-02-01",
+      application_id:"app_001", application_status:"Approved", screening_status:"Passed",
+      inspection_id:"insp_001", inspection_type:"Move-out", inspection_date:"2025-01-12", inspector_name:"Carlos Rivera",
+      overall_score:"87/100", category_score:"Excellent", item_condition:"Good", compliance_status:"Compliant",
+      deficiency_type:"Cosmetic", deficiency_severity:"Low", remediation_due_date:"2025-02-01", remediation_status:"Scheduled",
+      device_id:"dev_001", device_type:"Smart Lock", lock_event_type:"Unlock", thermostat_setpoint:"72°F",
+      energy_kwh:"28.4", leak_detected:"No", humidity_level:"42%", battery_level:"94%",
+      billing_id:"bill_001", utility_type:"Electric", consumption_amount:"450 kWh", cost:"$145.00",
+      rubs_allocation_method:"Sq Ft Ratio", submeter_value:"12,847", variance_pct:"+5.2%",
+      transaction_id:"txn_001", transaction_status:"Settled", auto_pay_enrolled:"Yes", ledger_balance:"$0.00",
+      review_id:"rev_001", platform:"Google", rating:"4.5", sentiment_score:"0.87",
+      conversation_id:"conv_001", channel:"SMS", intent_detected:"Tour Request", response_time_seconds:"12",
+      screening_id:"scr_001", credit_score:"720", credit_recommendation:"Accept", income_verified:"Yes",
+      recommended_rent:"$2,475", current_rent:"$2,350", rent_delta:"+$125", market_comp_avg:"$2,510",
+      demand_score:"8.2/10", demand_trend:"Increasing", competitor_name:"Camden Rainey St",
+      gl_account_id:"4000", transaction_date:"2025-01-15", debit_amount:"$0.00", credit_amount:"$2,350.00",
+      budget_amount:"$450,000", actual_amount:"$438,200", variance:"($11,800)",
+      carbon_emissions:"142 tCO2e", energy_star_score:"78", esg_score:"B+",
+      policy_type:"Renter's Insurance", premium_amount:"$15/mo", claim_status:"Under Review"
+    };
+
+    // STATE
+    let allVendors = [...VENDORS];
+    let filteredVendors = [...VENDORS];
+    let showAllVendors = false;
+    let currentFilters = { category: '', status: '' };
+
+    // INITIALIZE
+    function init() {
+      calculateMetrics();
+      renderKPIs();
+      renderCoverageScore();
+      populateCategoryFilter();
+      renderCategoryRows();
+      renderVendorTable();
+      renderTimeline();
+    }
+
+    function calculateMetrics() {
+      window.metrics = {
+        totalVendors: VENDORS.length,
+        connectorsReady: VENDORS.filter(v => v.hasConnector).length,
+        connectorsToBuild: VENDORS.filter(v => !v.hasConnector).length,
+        totalFields: VENDORS.reduce((sum, v) => sum + v.detailedFields.length, 0),
+        totalWeeks: Math.ceil(VENDORS.filter(v => !v.hasConnector).length / CONNECTORS_PER_WEEK),
+        fieldsReady: VENDORS.filter(v => v.hasConnector).reduce((sum, v) => sum + v.detailedFields.length, 0),
+      };
+      metrics.fieldsMissing = metrics.totalFields - metrics.fieldsReady;
+      metrics.coveragePercentage = Math.round((metrics.fieldsReady / metrics.totalFields) * 100);
+    }
+
+    function renderKPIs() {
+      document.getElementById('kpiTotalVendors').textContent = metrics.totalVendors;
+      document.getElementById('kpiConnectorsReady').textContent = metrics.connectorsReady;
+      document.getElementById('kpiConnectorsBuild').textContent = metrics.connectorsToBuild;
+      document.getElementById('kpiWeeksEstimate').textContent = `~${metrics.totalWeeks} week${metrics.totalWeeks > 1 ? 's' : ''} to complete`;
+      document.getElementById('kpiDataFields').textContent = metrics.totalFields.toLocaleString();
+    }
+
+    function renderCoverageScore() {
+      const percentage = metrics.coveragePercentage;
+      const circumference = 2 * Math.PI * 50;
+      const strokeDasharray = (percentage / 100) * circumference;
+
+      document.getElementById('coverageArc').setAttribute('stroke-dasharray', `${strokeDasharray} ${circumference}`);
+      document.getElementById('coveragePercentageToday').textContent = percentage + '%';
+      document.getElementById('fieldsToday').textContent = metrics.fieldsReady.toLocaleString();
+      document.getElementById('fieldsBuildout').textContent = metrics.totalFields.toLocaleString();
+      document.getElementById('fieldsMissing').textContent = metrics.fieldsMissing.toLocaleString();
+
+      document.getElementById('coverageBanner').innerHTML = `<strong>Full buildout in ~${metrics.totalWeeks} week${metrics.totalWeeks > 1 ? 's' : ''}</strong> — bringing your data coverage from ${percentage}% to 100% across all ${metrics.totalVendors} vendors at ${CONNECTORS_PER_WEEK} connectors/week.`;
+
+      document.getElementById('ctaToday').textContent = percentage + '%';
+    }
+
+    function populateCategoryFilter() {
+      const categories = [...new Set(VENDORS.map(v => v.category))].sort();
+      const select = document.getElementById('categoryFilter');
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderCategoryRows() {
+      const categories = [...new Set(VENDORS.map(v => v.category))].sort();
+      const container = document.getElementById('categoryRows');
+      container.innerHTML = '';
+
+      categories.forEach(cat => {
+        const catVendors = VENDORS.filter(v => v.category === cat);
+        const readyCount = catVendors.filter(v => v.hasConnector).length;
+        const ready = catVendors.filter(v => v.hasConnector);
+        const needsBuild = catVendors.filter(v => !v.hasConnector);
+
+        const totalFields = catVendors.reduce((sum, v) => sum + v.detailedFields.length, 0);
+        const readyFields = ready.reduce((sum, v) => sum + v.detailedFields.length, 0);
+        const coverage = Math.round((readyFields / totalFields) * 100);
+
+        const row = document.createElement('div');
+        row.className = 'category-row';
+
+        const header = document.createElement('div');
+        header.className = 'category-row-header';
+        header.innerHTML = `
+          <div class="category-row-name">${cat}</div>
+          <div class="category-row-stats">${readyCount}/${catVendors.length} connectors — ${coverage}% data coverage</div>
+        `;
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'category-progress';
+        const fill = document.createElement('div');
+        fill.className = 'category-progress-fill';
+        fill.style.width = coverage + '%';
+        if (coverage === 100) fill.classList.add('ready');
+        else if (coverage > 0) fill.classList.add('partial');
+        else fill.classList.add('notready');
+        progressBar.appendChild(fill);
+
+        const vendors = document.createElement('div');
+        vendors.className = 'category-vendors';
+        ready.forEach(v => {
+          const chip = document.createElement('span');
+          chip.className = 'vendor-chip ready' + (v.quickWin ? ' quick-win' : '');
+          chip.textContent = v.vendor;
+          vendors.appendChild(chip);
+        });
+        needsBuild.forEach(v => {
+          const chip = document.createElement('span');
+          chip.className = 'vendor-chip needs-build' + (v.quickWin ? ' quick-win' : '');
+          chip.textContent = v.vendor;
+          vendors.appendChild(chip);
+        });
+
+        row.appendChild(header);
+        row.appendChild(progressBar);
+        row.appendChild(vendors);
+        container.appendChild(row);
+      });
+    }
+
+    function filterByStatus(event) {
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const categorySelect = document.getElementById('categoryFilter');
+      const activeStatusBtn = document.querySelector('.filter-btn.active');
+
+      currentFilters.category = categorySelect.value;
+      currentFilters.status = activeStatusBtn ? activeStatusBtn.getAttribute('data-filter') : '';
+
+      filteredVendors = VENDORS.filter(v => {
+        if (currentFilters.category && v.category !== currentFilters.category) return false;
+        if (currentFilters.status === 'ready' && !v.hasConnector) return false;
+        if (currentFilters.status === 'needs-build' && v.hasConnector) return false;
+        return true;
+      });
+
+      if (currentFilters.category) {
+        document.getElementById('categoryRows').style.display = 'none';
+      } else {
+        document.getElementById('categoryRows').style.display = 'flex';
+        document.getElementById('categoryRows').style.flexDirection = 'column';
+      }
+
+      renderVendorTable();
+      showAllVendors = false;
+      updateShowAllButton();
+    }
+
+    function renderVendorTable() {
+      const tbody = document.getElementById('vendorTableBody');
+      tbody.innerHTML = '';
+
+      const displayVendors = showAllVendors ? filteredVendors : filteredVendors.slice(0, 10);
+
+      displayVendors.forEach((vendor, idx) => {
+        const row = document.createElement('tr');
+        row.className = vendor.hasConnector ? 'ready-row' : 'build-row';
+        row.setAttribute('data-index', idx);
+        row.onclick = () => toggleRowExpanded(row);
+
+        const status = vendor.hasConnector ? 'Ready' : 'Needs Build';
+        const statusClass = vendor.hasConnector ? 'ready' : 'needs-build';
+        const estBuild = vendor.hasConnector ? '—' : '1 wk';
+        const estBuildClass = vendor.hasConnector ? 'est-build' : 'est-build active';
+
+        const needsBuildVendors = VENDORS.filter(v => !v.hasConnector);
+        let rolloutWeek = '—';
+        if (!vendor.hasConnector) {
+          const vendorIdx = needsBuildVendors.indexOf(vendor);
+          rolloutWeek = `Week ${Math.floor(vendorIdx / CONNECTORS_PER_WEEK) + 1}`;
+        }
+
+        row.innerHTML = `
+          <td class="vendor-name ${vendor.quickWin ? 'quick-win' : ''}">${vendor.vendor}</td>
+          <td class="category-text">${vendor.category}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+          <td class="data-fields-count">${vendor.detailedFields.length}</td>
+          <td class="${estBuildClass}">${estBuild}</td>
+          <td class="rollout-week">${rolloutWeek}</td>
+        `;
+        tbody.appendChild(row);
+
+        const expandedRow = document.createElement('tr');
+        expandedRow.className = 'row-expanded';
+        expandedRow.innerHTML = `
+          <td colspan="6">
+            <div class="expanded-content">
+              <div class="expanded-section">
+                <div class="expanded-label">Data Objects Available</div>
+                <div class="expanded-tags">
+                  ${vendor.dataPoints.map(p => `<span class="tag">${p}</span>`).join('')}
+                </div>
+              </div>
+              <div class="expanded-section">
+                <div class="expanded-label">Sample Row-Level Fields</div>
+                <div class="expanded-tags">
+                  ${vendor.detailedFields.slice(0, 15).map(f => `<span class="tag fields">${f}</span>`).join('')}
+                  ${vendor.detailedFields.length > 15 ? `<span class="tag-more">+ ${vendor.detailedFields.length - 15} more fields</span>` : ''}
+                </div>
+              </div>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(expandedRow);
+      });
+
+      updateShowAllButton();
+    }
+
+    function toggleRowExpanded(row) {
+      const expanded = row.classList.contains('expanded');
+      const expandedRow = row.nextElementSibling;
+
+      if (expanded) {
+        row.classList.remove('expanded');
+        expandedRow.classList.remove('show');
+      } else {
+        row.classList.add('expanded');
+        expandedRow.classList.add('show');
+      }
+    }
+
+    function toggleShowAll() {
+      showAllVendors = !showAllVendors;
+      renderVendorTable();
+    }
+
+    function updateShowAllButton() {
+      const btn = document.getElementById('showAllBtn');
+      if (showAllVendors) {
+        btn.textContent = `Show less ▴`;
+      } else {
+        btn.textContent = `Show all ${filteredVendors.length} vendors ▾`;
+      }
+    }
+
+    function renderTimeline() {
+      const needsBuildVendors = VENDORS.filter(v => !v.hasConnector);
+      const weeks = Math.ceil(needsBuildVendors.length / CONNECTORS_PER_WEEK);
+
+      document.getElementById('timelineSubtitle').textContent = `Estimated schedule to build all ${needsBuildVendors.length} missing connectors at ${CONNECTORS_PER_WEEK} connectors per week.`;
+
+      const timelineWeeks = document.getElementById('timelineWeeks');
+      timelineWeeks.innerHTML = '';
+
+      for (let w = 1; w <= weeks; w++) {
+        const weekDiv = document.createElement('div');
+        weekDiv.className = 'timeline-week';
+
+        const header = document.createElement('div');
+        header.className = 'timeline-week-header';
+        header.textContent = `Week ${w}`;
+        weekDiv.appendChild(header);
+
+        const start = (w - 1) * CONNECTORS_PER_WEEK;
+        const end = Math.min(w * CONNECTORS_PER_WEEK, needsBuildVendors.length);
+
+        for (let i = start; i < end; i++) {
+          const vendorDiv = document.createElement('div');
+          vendorDiv.className = 'timeline-vendor';
+          vendorDiv.textContent = needsBuildVendors[i].vendor;
+          weekDiv.appendChild(vendorDiv);
+        }
+
+        timelineWeeks.appendChild(weekDiv);
+      }
+
+      const resultDiv = document.getElementById('timelineResult');
+      const completeDate = new Date();
+      completeDate.setDate(completeDate.getDate() + (weeks * 7));
+      const dateStr = completeDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      resultDiv.textContent = `All ${needsBuildVendors.length} connectors completed by ${dateStr} — your full data ecosystem online and integrated.`;
+    }
+
+    function exportToExcel() {
+      const workbook = XLSX.utils.book_new();
+
+      const summary = [
+        ['PROPEXO VENDOR ASSESSMENT DASHBOARD'],
+        ['Client', CLIENT],
+        ['Date Prepared', 'April 13, 2026'],
+        [''],
+        ['OVERVIEW'],
+        ['Total Vendors', metrics.totalVendors],
+        ['Connectors Ready', metrics.connectorsReady],
+        ['Connectors to Build', metrics.connectorsToBuild],
+        ['Total Data Fields', metrics.totalFields],
+        [''],
+        ['COVERAGE'],
+        ['Data Coverage Today', `${metrics.coveragePercentage}%`],
+        ['Data Coverage at Completion', '100%'],
+        ['Fields Available Today', metrics.fieldsReady],
+        ['Fields After Buildout', metrics.totalFields],
+        ['Fields Missing', metrics.fieldsMissing],
+        [''],
+        ['TIMELINE'],
+        ['Estimated Weeks to Complete', metrics.totalWeeks],
+        ['Connectors per Week', CONNECTORS_PER_WEEK],
+      ];
+      const ws1 = XLSX.utils.aoa_to_sheet(summary);
+      XLSX.utils.book_append_sheet(workbook, ws1, 'Executive Summary');
+
+      const vendors = [
+        ['Vendor', 'Category', 'Connector Status', 'Quick Win', 'Data Objects', 'Total Data Fields', 'Est. Build Time', 'Rollout Week']
+      ];
+      const needsBuildVendors = VENDORS.filter(v => !v.hasConnector);
+      VENDORS.forEach(v => {
+        const status = v.hasConnector ? 'Ready' : 'Needs Build';
+        const quickWin = v.quickWin ? 'Yes' : 'No';
+        const estBuild = v.hasConnector ? '—' : '1 week';
+        let rolloutWeek = '—';
+        if (!v.hasConnector) {
+          const idx = needsBuildVendors.indexOf(v);
+          rolloutWeek = `Week ${Math.floor(idx / CONNECTORS_PER_WEEK) + 1}`;
+        }
+        vendors.push([
+          v.vendor,
+          v.category,
+          status,
+          quickWin,
+          v.dataPoints.join('; '),
+          v.detailedFields.length,
+          estBuild,
+          rolloutWeek
+        ]);
+      });
+      const ws2 = XLSX.utils.aoa_to_sheet(vendors);
+      XLSX.utils.book_append_sheet(workbook, ws2, 'Vendor Assessment');
+
+      const fields = [
+        ['Vendor', 'Category', 'Connector Status', 'Field Name', 'Example Value']
+      ];
+      VENDORS.forEach(v => {
+        const status = v.hasConnector ? 'Ready' : 'Needs Build';
+        v.detailedFields.forEach(field => {
+          const exampleValue = EXAMPLES[field] || '—';
+          fields.push([v.vendor, v.category, status, field, exampleValue]);
+        });
+      });
+      const ws3 = XLSX.utils.aoa_to_sheet(fields);
+      XLSX.utils.book_append_sheet(workbook, ws3, 'Detailed Data Fields');
+
+      XLSX.writeFile(workbook, 'Propexo_Vendor_Assessment.xlsx');
+    }
+
+    // ─── TAB SWITCHING ───
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+      if (tabId === 'dataflow' && !window._dfRendered) {
+        renderDataFlow();
+        window._dfRendered = true;
+      }
+    }
+
+    // ─── DATA FLOW VISUALIZATION ───
+    let dfShowPropexo = false;
+
+    // Define how much of each vendor's data can sync to PMS
+    // pmsFields: fields that actually write back to PMS
+    // totalFields: total fields the vendor generates
+    const VENDOR_FLOW_DATA = VENDORS.map(v => {
+      const total = v.detailedFields.length;
+      // PMS vendors sync most of their own fields; others sync very little
+      let pmsSync;
+      if (v.category === 'Property Management') {
+        pmsSync = Math.round(total * 0.85); // PMS syncs most of its own data
+      } else if (v.category === 'Payments & Financial Services' || v.category === 'Accounting & Finance') {
+        pmsSync = Math.round(total * 0.35);
+      } else if (v.category === 'Leasing, CRM & Marketing') {
+        pmsSync = Math.round(total * 0.18);
+      } else if (v.category === 'Revenue Management') {
+        pmsSync = Math.round(total * 0.12);
+      } else if (v.category === 'Screening') {
+        pmsSync = Math.round(total * 0.15);
+      } else {
+        pmsSync = Math.round(total * 0.08); // IoT, inspections, etc. sync almost nothing
+      }
+      return {
+        vendor: v.vendor,
+        category: v.category,
+        totalFields: total,
+        pmsSyncFields: pmsSync,
+        strandedFields: total - pmsSync,
+        hasConnector: v.hasConnector,
+        pctStranded: Math.round(((total - pmsSync) / total) * 100)
+      };
+    });
+
+    // Category colors for the network diagram
+    const CAT_COLORS = {
+      'Property Management': '#3b82f6',
+      'Leasing, CRM & Marketing': '#8b5cf6',
+      'Inspections & Compliance': '#06b6d4',
+      'Maintenance Operations': '#06b6d4',
+      'Maintenance & Repairs': '#06b6d4',
+      'Smart Access & IoT': '#ec4899',
+      'Utility Management': '#14b8a6',
+      'Utility Analytics': '#14b8a6',
+      'Payments & Financial Services': '#f59e0b',
+      'Accounting & Finance': '#f59e0b',
+      'Revenue Management': '#ef4444',
+      'Screening': '#f97316',
+      'Reputation Management': '#a855f7',
+      'AI Communications': '#6366f1',
+      'Resident Engagement': '#10b981',
+      'Insurance': '#64748b'
+    };
+
+    function getShortName(name) {
+      if (name.length <= 14) return name;
+      // Abbreviate
+      const map = {
+        'Yardi Voyager': 'Yardi',
+        'RealPage Revenue Mgmt': 'RP Revenue',
+        'TransUnion SmartMove': 'SmartMove',
+        'RealPage': 'RealPage',
+        'REVS (Yardi)': 'REVS',
+        'Effective Coverage': 'Eff. Coverage',
+        'ActiveBuilding': 'ActiveBldg',
+      };
+      return map[name] || name.substring(0, 12) + '…';
+    }
+
+    function toggleDataFlow() {
+      dfShowPropexo = !dfShowPropexo;
+      const toggle = document.getElementById('dfToggle');
+      const labelToday = document.getElementById('dfLabelToday');
+      const labelPropexo = document.getElementById('dfLabelPropexo');
+      const title = document.getElementById('dfNetworkTitle');
+      const subtitle = document.getElementById('dfNetworkSubtitle');
+
+      if (dfShowPropexo) {
+        toggle.classList.add('on');
+        labelToday.classList.remove('active');
+        labelPropexo.classList.add('active');
+        title.textContent = 'With Propexo: Unified Data Lake';
+        subtitle.textContent = 'Every vendor connects through Propexo. All data flows to your warehouse — accessible, normalized, ready for intelligence.';
+      } else {
+        toggle.classList.remove('on');
+        labelToday.classList.add('active');
+        labelPropexo.classList.remove('active');
+        title.textContent = 'Your Data Today: Fragmented Silos';
+        subtitle.textContent = "Each vendor's data is locked in its own portal. Your PMS sees only a fraction of the total picture.";
+      }
+      renderNetworkDiagram();
+      renderBreakdownBars();
+    }
+
+    function renderNetworkDiagram() {
+      const svg = document.getElementById('dfNetworkSvg');
+      const cx = 450, cy = 260;
+      let html = '';
+
+      // Defs for markers and gradients
+      html += `<defs>
+        <marker id="arrowGreen" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,3 L0,6 z" fill="#0ea47a" opacity="0.7"/>
+        </marker>
+        <marker id="arrowRed" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,3 L0,6 z" fill="#e8683f" opacity="0.5"/>
+        </marker>
+        <marker id="arrowGray" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,3 L0,6 z" fill="#cbd5e1" opacity="0.5"/>
+        </marker>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>`;
+
+      const vendors = VENDOR_FLOW_DATA;
+      const n = vendors.length;
+
+      if (!dfShowPropexo) {
+        // ─── SILO VIEW: Multiple PMS nodes in center, vendors around ───
+        const pmsVendors = vendors.filter(v => v.category === 'Property Management');
+        const nonPmsVendors = vendors.filter(v => v.category !== 'Property Management');
+        const pmsCount = pmsVendors.length;
+
+        // Draw PMS center nodes — spread horizontally
+        const pmsSpacing = 130;
+        const pmsStartX = cx - ((pmsCount - 1) * pmsSpacing) / 2;
+        const pmsCenters = [];
+
+        pmsVendors.forEach((pms, pi) => {
+          const px = pmsStartX + pi * pmsSpacing;
+          const py = cy;
+          pmsCenters.push({ x: px, y: py, vendor: pms.vendor });
+          const color = '#3b82f6';
+          html += `<rect x="${px-52}" y="${py-26}" width="104" height="52" rx="10" fill="${color}" opacity="0.9"/>`;
+          html += `<text x="${px}" y="${py-4}" text-anchor="middle" fill="white" font-size="10" font-weight="700">${getShortName(pms.vendor)}</text>`;
+          html += `<text x="${px}" y="${py+10}" text-anchor="middle" fill="white" font-size="8" opacity="0.75">${pms.totalFields} fields</text>`;
+        });
+
+        // Draw dashed red "no connection" lines between PMS nodes
+        for (let i = 0; i < pmsCenters.length - 1; i++) {
+          const a = pmsCenters[i], b = pmsCenters[i+1];
+          html += `<line x1="${a.x+52}" y1="${a.y}" x2="${b.x-52}" y2="${b.y}" stroke="#e8683f" stroke-width="1.5" stroke-dasharray="4,6" opacity="0.35"/>`;
+          const midX = (a.x + b.x) / 2;
+          html += `<text x="${midX}" y="${a.y - 6}" text-anchor="middle" fill="#e8683f" font-size="7" font-weight="600" opacity="0.7">NO SYNC</text>`;
+        }
+
+        // Position non-PMS vendors in ellipse around center
+        const nn = nonPmsVendors.length;
+        const radiusX = 360, radiusY = 210;
+        nonPmsVendors.forEach((v, i) => {
+          const angle = (i / nn) * Math.PI * 2 - Math.PI / 2;
+          const vx = cx + Math.cos(angle) * radiusX;
+          const vy = cy + Math.sin(angle) * radiusY;
+          const color = CAT_COLORS[v.category] || '#64748b';
+
+          // Connect to nearest PMS center
+          let nearestPms = pmsCenters[0];
+          let nearestDist = Infinity;
+          pmsCenters.forEach(pc => {
+            const d = Math.hypot(vx - pc.x, vy - pc.y);
+            if (d < nearestDist) { nearestDist = d; nearestPms = pc; }
+          });
+
+          // Connection line
+          const syncPct = v.pmsSyncFields / v.totalFields;
+          if (syncPct > 0.3) {
+            html += `<line x1="${vx}" y1="${vy}" x2="${nearestPms.x}" y2="${nearestPms.y}" stroke="#0ea47a" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.4" marker-end="url(#arrowGreen)"/>`;
+          } else if (syncPct > 0.1) {
+            html += `<line x1="${vx}" y1="${vy}" x2="${nearestPms.x}" y2="${nearestPms.y}" stroke="#e8683f" stroke-width="1" stroke-dasharray="4,6" opacity="0.3" marker-end="url(#arrowRed)"/>`;
+          } else {
+            html += `<line x1="${vx}" y1="${vy}" x2="${nearestPms.x}" y2="${nearestPms.y}" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="2,8" opacity="0.25" marker-end="url(#arrowGray)"/>`;
+          }
+
+          // Vendor node (sized by data volume)
+          const nodeR = Math.max(18, Math.min(30, v.totalFields / 5));
+          html += `<circle cx="${vx}" cy="${vy}" r="${nodeR}" fill="${color}" opacity="0.15" stroke="${color}" stroke-width="1.5"/>`;
+          html += `<circle cx="${vx}" cy="${vy}" r="${nodeR * 0.6}" fill="${color}" opacity="0.35"/>`;
+
+          // Stranded indicator (red arc around node)
+          const strandedAngle = (v.pctStranded / 100) * Math.PI * 2;
+          if (v.pctStranded > 50) {
+            const startAngle = -Math.PI / 2;
+            const endAngle = startAngle + strandedAngle;
+            const arcR = nodeR + 5;
+            const x1 = vx + Math.cos(startAngle) * arcR;
+            const y1 = vy + Math.sin(startAngle) * arcR;
+            const x2 = vx + Math.cos(endAngle) * arcR;
+            const y2 = vy + Math.sin(endAngle) * arcR;
+            const largeArc = strandedAngle > Math.PI ? 1 : 0;
+            html += `<path d="M${x1},${y1} A${arcR},${arcR} 0 ${largeArc},1 ${x2},${y2}" fill="none" stroke="#e8683f" stroke-width="2.5" opacity="0.5"/>`;
+          }
+
+          // Label
+          const labelY = vy > cy ? vy + nodeR + 14 : vy - nodeR - 6;
+          html += `<text x="${vx}" y="${labelY}" text-anchor="middle" fill="#334155" font-size="9" font-weight="600">${getShortName(v.vendor)}</text>`;
+          const pctY = labelY + 12;
+          html += `<text x="${vx}" y="${pctY}" text-anchor="middle" fill="#e8683f" font-size="8" font-weight="700">${v.pctStranded}% stranded</text>`;
+        });
+
+        // Central warning text — positioned below PMS nodes
+        const strandedPctTotal = Math.round(VENDOR_FLOW_DATA.reduce((s,v) => s + v.strandedFields, 0) / VENDOR_FLOW_DATA.reduce((s,v) => s + v.totalFields, 0) * 100);
+        html += `<text x="${cx}" y="${cy + 55}" text-anchor="middle" fill="#e8683f" font-size="12" font-weight="700" opacity="0.8">${strandedPctTotal}% of your data never reaches your PMS</text>`;
+        if (pmsCount > 1) {
+          html += `<text x="${cx}" y="${cy + 70}" text-anchor="middle" fill="#94a3b8" font-size="10" opacity="0.9">${pmsCount} separate PMS databases — no data shared between them</text>`;
+        }
+
+      } else {
+        // ─── PROPEXO VIEW: Everything flows through Propexo to warehouse ───
+        // Propexo hub
+        html += `<rect x="${cx-55}" y="${cy-55}" width="110" height="50" rx="12" fill="#0ea47a" filter="url(#glow)"/>`;
+        html += `<text x="${cx}" y="${cy-30}" text-anchor="middle" fill="white" font-size="13" font-weight="700">PROPEXO</text>`;
+        html += `<text x="${cx}" y="${cy-17}" text-anchor="middle" fill="white" font-size="9" opacity="0.85">Unified Platform</text>`;
+
+        // Data Warehouse below
+        html += `<rect x="${cx-65}" y="${cy+30}" width="130" height="45" rx="8" fill="#1e3a5f" stroke="#3b6bdb" stroke-width="2"/>`;
+        html += `<text x="${cx}" y="${cy+50}" text-anchor="middle" fill="white" font-size="11" font-weight="700">YOUR DATA LAKE</text>`;
+        html += `<text x="${cx}" y="${cy+64}" text-anchor="middle" fill="#93c5fd" font-size="9">1,740 fields · 100%</text>`;
+
+        // Arrow from Propexo to warehouse
+        html += `<line x1="${cx}" y1="${cy-5}" x2="${cx}" y2="${cy+30}" stroke="#3b6bdb" stroke-width="2.5" marker-end="url(#arrowGreen)"/>`;
+
+        // Output tools from warehouse
+        const tools = [
+          { label: 'Dashboards', x: cx + 170, y: cy + 48 },
+          { label: 'AI / ML', x: cx + 170, y: cy + 75 },
+          { label: 'Reporting', x: cx - 170, y: cy + 48 },
+          { label: 'Automation', x: cx - 170, y: cy + 75 },
+        ];
+        tools.forEach(t => {
+          html += `<line x1="${cx + (t.x > cx ? 65 : -65)}" y1="${t.y}" x2="${t.x + (t.x > cx ? -40 : 40)}" y2="${t.y}" stroke="#3b6bdb" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5" marker-end="url(#arrowGreen)"/>`;
+          html += `<rect x="${t.x-40}" y="${t.y-12}" width="80" height="24" rx="6" fill="#eef2ff" stroke="#818cf8" stroke-width="1"/>`;
+          html += `<text x="${t.x}" y="${t.y+4}" text-anchor="middle" fill="#4338ca" font-size="9" font-weight="600">${t.label}</text>`;
+        });
+
+        // Vendors around top half
+        const radiusX = 350, radiusY = 190;
+        vendors.forEach((v, i) => {
+          const angle = (i / n) * Math.PI * 1.6 - Math.PI * 0.8 - Math.PI / 2;
+          const vx = cx + Math.cos(angle) * radiusX;
+          const vy = cy + Math.sin(angle) * radiusY - 30;
+          const color = CAT_COLORS[v.category] || '#64748b';
+
+          // All solid green connections
+          html += `<line x1="${vx}" y1="${vy}" x2="${cx}" y2="${cy-55}" stroke="#0ea47a" stroke-width="1.5" opacity="0.45" marker-end="url(#arrowGreen)"/>`;
+
+          const nodeR = Math.max(18, Math.min(28, v.totalFields / 5));
+          html += `<circle cx="${vx}" cy="${vy}" r="${nodeR}" fill="${color}" opacity="0.2" stroke="${color}" stroke-width="1.5"/>`;
+          html += `<circle cx="${vx}" cy="${vy}" r="${nodeR * 0.6}" fill="${color}" opacity="0.5"/>`;
+
+          // Green checkmark arc (full circle = all data flowing)
+          const arcR = nodeR + 5;
+          html += `<circle cx="${vx}" cy="${vy}" r="${arcR}" fill="none" stroke="#0ea47a" stroke-width="2.5" opacity="0.4"/>`;
+
+          const labelY = vy < cy ? vy - nodeR - 6 : vy + nodeR + 14;
+          html += `<text x="${vx}" y="${labelY}" text-anchor="middle" fill="#334155" font-size="9" font-weight="600">${getShortName(v.vendor)}</text>`;
+          html += `<text x="${vx}" y="${labelY + 12}" text-anchor="middle" fill="#0ea47a" font-size="8" font-weight="700">100% flowing</text>`;
+        });
+
+        // Success text
+        html += `<text x="${cx}" y="${cy + 100}" text-anchor="middle" fill="#0ea47a" font-size="12" font-weight="700">All 1,740 fields flowing to your data lake</text>`;
+      }
+
+      svg.innerHTML = html;
+    }
+
+    function renderBreakdownBars() {
+      const container = document.getElementById('dfBreakdownRows');
+      // Sort by stranded % descending
+      const sorted = [...VENDOR_FLOW_DATA].sort((a, b) => b.pctStranded - a.pctStranded);
+
+      let html = '';
+      sorted.forEach(v => {
+        const pmsPct = dfShowPropexo ? 100 : Math.round((v.pmsSyncFields / v.totalFields) * 100);
+        const strandedPct = dfShowPropexo ? 0 : 100 - pmsPct;
+        const syncLabel = dfShowPropexo ? v.totalFields : v.pmsSyncFields;
+        const strandedLabel = dfShowPropexo ? 0 : v.strandedFields;
+
+        html += `<div class="df-vendor-row">
+          <div class="df-vendor-name">${v.vendor}</div>
+          <div class="df-vendor-category">${v.category.split(',')[0]}</div>
+          <div class="df-vendor-bar-container">
+            <div class="df-vendor-bar-pms" style="width: ${pmsPct}%"></div>
+            ${strandedPct > 0 ? `<div class="df-vendor-bar-stranded" style="left: ${pmsPct}%; width: ${strandedPct}%"></div>` : ''}
+          </div>
+          <div class="df-vendor-stats">
+            <span class="syncs">${syncLabel}</span> syncs · <span class="stranded">${strandedLabel}</span> stranded
+          </div>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderDataFlow() {
+      // Calculate real stats
+      const totalFields = VENDOR_FLOW_DATA.reduce((s, v) => s + v.totalFields, 0);
+      const pmsFields = VENDOR_FLOW_DATA.reduce((s, v) => s + v.pmsSyncFields, 0);
+      const strandedPct = Math.round(((totalFields - pmsFields) / totalFields) * 100);
+
+      document.getElementById('dfStranded').textContent = strandedPct + '%';
+      document.getElementById('dfConnected').textContent = pmsFields.toLocaleString();
+      document.getElementById('dfTotal').textContent = totalFields.toLocaleString();
+
+      renderNetworkDiagram();
+      renderBreakdownBars();
+    }
+
+    // ─── API ACCESS TIMELINE DATA ───
+    // Realistic timelines based on industry norms and call transcript insights
+    const API_TIMELINES = {
+      'Yardi Voyager':      { propexo: '2–3 weeks', direct: '4–6 months',  directWeeks: 20, propexoWeeks: 2.5, note: 'Yardi API partnership program required; $25K+ annual fees typical' },
+      'RealPage':           { propexo: '2–3 weeks', direct: '3–5 months',  directWeeks: 16, propexoWeeks: 2.5, note: 'RealPage API access requires enterprise agreement' },
+      'Entrata':            { propexo: '2–3 weeks', direct: '4–6 months',  directWeeks: 20, propexoWeeks: 2.5, note: 'Entrata quoted 6 months + $60K/yr for direct API access' },
+      'Knock CRM':          { propexo: '1–2 weeks', direct: '4–8 weeks',   directWeeks: 6,  propexoWeeks: 1.5, note: '' },
+      'Funnel':             { propexo: '1–2 weeks', direct: '4–8 weeks',   directWeeks: 6,  propexoWeeks: 1.5, note: '' },
+      'RentCafe':           { propexo: '2–3 weeks', direct: '3–5 months',  directWeeks: 16, propexoWeeks: 2.5, note: 'Tied to Yardi API partnership' },
+      'HappyCo':            { propexo: '1–2 weeks', direct: '3–6 weeks',   directWeeks: 4.5, propexoWeeks: 1.5, note: '' },
+      'Breezeway':          { propexo: '1–2 weeks', direct: '3–6 weeks',   directWeeks: 4.5, propexoWeeks: 1.5, note: '' },
+      'Latchel':            { propexo: '1–2 weeks', direct: '3–6 weeks',   directWeeks: 4.5, propexoWeeks: 1.5, note: '' },
+      'SmartRent':          { propexo: '1–2 weeks', direct: '4–8 weeks',   directWeeks: 6,  propexoWeeks: 1.5, note: '' },
+      'Conservice':         { propexo: '1–2 weeks', direct: '6–10 weeks',  directWeeks: 8,  propexoWeeks: 1.5, note: '' },
+      'Zego':               { propexo: '1–2 weeks', direct: '4–8 weeks',   directWeeks: 6,  propexoWeeks: 1.5, note: '' },
+      'Birdeye':            { propexo: '1–2 weeks', direct: '2–4 weeks',   directWeeks: 3,  propexoWeeks: 1.5, note: '' },
+      'EliseAI':            { propexo: '1–2 weeks', direct: '4–8 weeks',   directWeeks: 6,  propexoWeeks: 1.5, note: '' },
+      'Sage Intacct':       { propexo: '2–4 weeks', direct: '2–4 months',  directWeeks: 12, propexoWeeks: 3,   note: 'Requires Sage developer registration + marketplace listing' },
+      'SightPlan':          { propexo: '2–3 weeks', direct: '4–8 weeks',   directWeeks: 6,  propexoWeeks: 2.5, note: '' },
+      'WegoWise':           { propexo: '2–3 weeks', direct: '4–8 weeks',   directWeeks: 6,  propexoWeeks: 2.5, note: '' },
+      'TransUnion SmartMove':{ propexo: '2–3 weeks', direct: '2–4 months', directWeeks: 12, propexoWeeks: 2.5, note: 'Requires credentialed access agreement' },
+      'RealPage Revenue Mgmt':{ propexo: '2–3 weeks', direct: '3–5 months', directWeeks: 16, propexoWeeks: 2.5, note: 'Bundled with RealPage enterprise API' },
+      'REVS (Yardi)':       { propexo: '2–3 weeks', direct: '4–6 months',  directWeeks: 20, propexoWeeks: 2.5, note: 'Bundled with Yardi API partnership' },
+      'ActiveBuilding':     { propexo: '2–3 weeks', direct: '6–10 weeks',  directWeeks: 8,  propexoWeeks: 2.5, note: '' },
+      'Effective Coverage':  { propexo: '2–3 weeks', direct: '4–8 weeks',  directWeeks: 6,  propexoWeeks: 2.5, note: '' },
+    };
+
+    function renderApiTimeline() {
+      const container = document.getElementById('apiTimelineRows');
+      // Sort by direct timeline (longest first) to show biggest impact at top
+      const sorted = [...VENDORS].sort((a, b) => {
+        const aT = (API_TIMELINES[a.vendor] || {}).directWeeks || 4;
+        const bT = (API_TIMELINES[b.vendor] || {}).directWeeks || 4;
+        return bT - aT;
+      });
+
+      const maxWeeks = 24; // scale bar to 6 months
+      let totalDirectWeeks = 0;
+      let totalPropexoWeeks = 0;
+      let html = '';
+
+      sorted.forEach(v => {
+        const t = API_TIMELINES[v.vendor];
+        if (!t) return;
+        totalDirectWeeks += t.directWeeks;
+        totalPropexoWeeks += t.propexoWeeks;
+
+        const propexoPct = Math.max(8, (t.propexoWeeks / maxWeeks) * 100);
+        const directPct = Math.max(8, (t.directWeeks / maxWeeks) * 100);
+        const savedWeeks = Math.round(t.directWeeks - t.propexoWeeks);
+
+        html += `<div class="api-timeline-row">
+          <div class="api-timeline-vendor">${v.vendor}</div>
+          <div class="api-timeline-category">${v.category.split(',')[0]}</div>
+          <div>
+            <div class="api-timeline-bar propexo" style="width: ${propexoPct}%">${t.propexo}</div>
+          </div>
+          <div>
+            <div class="api-timeline-bar direct" style="width: ${directPct}%">${t.direct}</div>
+          </div>
+          <div class="api-timeline-savings">-${savedWeeks} wks</div>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+
+      // Callout
+      const avgDirectMonths = Math.round((totalDirectWeeks / VENDORS.length) / 4.33);
+      const totalSavedWeeks = Math.round(totalDirectWeeks - totalPropexoWeeks);
+      document.getElementById('apiTimelineCalloutText').innerHTML = `<strong>If you connected all ${VENDORS.length} vendors yourself</strong>, you'd spend an estimated ${Math.round(totalDirectWeeks)} cumulative weeks navigating API applications, sandbox testing, partnership agreements, and production approvals. With Propexo, you're live across all vendors in <strong>2–4 weeks total</strong> — saving ~${totalSavedWeeks} weeks of integration work.`;
+    }
+
+    // Add to init
+    const _origInit = init;
+    init = function() {
+      _origInit();
+      renderApiTimeline();
+    };
+
+    init();
+  </script>
+</body>
+</html>
